@@ -22,3 +22,13 @@ class Category(db.Model):
     __tablename__ = 'category'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(50), nullable=False)
+
+
+def category_id_by_name(data: dict) -> int | None:
+    category_name = data.get('category')
+    if category_name is None:
+        return None
+    category = Category.query.filter(Category.name == category_name).first()
+    if category is None:
+        return None
+    return category.id

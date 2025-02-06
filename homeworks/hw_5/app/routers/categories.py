@@ -8,6 +8,8 @@ from app.schemas.questions import CreateQuestion, ResponseQuestion, MessageRespo
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 
+
+
 @categories_bp.route('/', methods=['GET'])
 def get_all_categories():
     categories = Category.query.all()
@@ -58,3 +60,4 @@ def delete_category(category_id):
     db.session.delete(category)
     db.session.commit()
     return jsonify({"message": f'Category {category_id} was deleted'}), 200
+

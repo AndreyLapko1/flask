@@ -8,9 +8,8 @@ class CreateQuestion(BaseModel):
 
 
 class ResponseQuestion(BaseModel):
-    # question_id: int
     text: str
-    category: str
+    # category: str | None
     model_config = {
         'from_attributes': True
     }
