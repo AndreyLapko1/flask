@@ -9,6 +9,9 @@ class Question(db.Model):
     text = db.Column(db.Text, nullable=False)
     responses = db.relationship("Response", backref="question", lazy='joined')
 
+    def __repr__(self):
+        return f'<Question id={self.id}, text={self.text}, category={self.category_id}>'
+
 
 class Statistic(db.Model):
     __tablename__ = 'statistic'

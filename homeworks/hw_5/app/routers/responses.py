@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template
 from flask import request
 from app.models.responses import Response
 from app.models.questions import Question
@@ -22,13 +22,12 @@ def get_all_responses():
     return pd.DataFrame(resp_data).to_html()
 
 
-
-
 @responses_bp.route('/', methods=['POST'])
 def add_response():
     data = request.get_json()
-    if not data or 'question_id' not in data or 'answer' not in data:
-        return jsonify({'message': 'No question or answer provided'}), 400
+    # if not data or 'question_id' not in data or 'answer' not in data:
+    #     return jsonify({'message': 'No question or answer provided'}), 400
+
 
     question = Question.query.get(data['question_id'])
     if not question:

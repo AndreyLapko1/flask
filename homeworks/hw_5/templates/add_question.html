@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+    {% block content %}
+    <form action="{{ usr_for('questions.add_question') }}" method="post">
+        <input type="text" name="text">
+        <input type="submit" value="Enter">
+    </form>
+    
+    {% endblock %}

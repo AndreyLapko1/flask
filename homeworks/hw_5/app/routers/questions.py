@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, redirect, url_for
 from app.models.questions import Question, category_id_by_name, Category
 import pandas as pd
 from app.models import db
@@ -8,27 +8,39 @@ from app.schemas.questions import CreateQuestion, ResponseQuestion, MessageRespo
 questions_bp = Blueprint('questions', __name__, url_prefix='/questions')
 
 
+
 @questions_bp.route('/', methods=['GET'])
 def get_questions():
     questions = Question.query.all()
     questions_data = [ResponseQuestion.model_validate(q).model_dump() for q in questions]
-    print(questions_data)
-    return pd.DataFrame(questions_data).to_html()
-    # return jsonify(questions_data)
+    cat_names = []
+    for q in questions_data:
+        print(q)
+        q_info = {
+            'text': q['text'],
+            'category': Category.query.filter(Category.id == q['category_id']).first().name,
+        }
+        cat_names.append(q_info)
+    return jsonify(cat_names)
+
+
 
 
 @questions_bp.route('/', methods=['POST'])
 def create_question():
     data = request.get_json()
-    if not data or 'text' not in data or 'category' not in data:
-        return jsonify({'message': 'No text provided'}), 400
-    category_id = category_id_by_name(data)
-    if category_id == 0:
-        return jsonify({'message': 'No category founded'}), 400
-    question = Question(text=data['text'], category_id=category_id)
-    db.session.add(question)
-    db.session.commit()
-    return jsonify({'message': 'Answer create', 'id': question.id}), 201
+    try:
+        category_id = category_id_by_name(data)
+        if category_id is None:
+            return jsonify({'message': 'Invalid category provided'}), 400
+        question_data = CreateQuestion(text=data['text'], category_id=category_id)
+        question = Question(text=question_data.text, category_id=question_data.category_id)
+        db.session.add(question)
+        db.session.commit()
+        return jsonify({'message': 'Question created successfully'}), 201
+    except ValueError as e:
+        return jsonify({'message': str(e)}), 400
+
 
 @questions_bp.route('/<int:question_id>', methods=['GET'])
 def get_question(question_id):
@@ -45,9 +57,12 @@ def update_question(question_id):
     if question is None:
         return jsonify({'message': 'Question not found'}), 404
     data = request.get_json()
-    if not data or 'text' not in data or 'category' not in data:
-        return jsonify({'message': 'No text or category provided'}), 400
-    question.text = data['question_text']
+    category_id = Category.query.filter(Category.name == data['category']).first().id
+    data['category_id'] = category_id
+    cool_data = ResponseQuestion(**data)
+    # if not data or 'text' not in data or 'category' not in data:
+    #     return jsonify({'message': 'No text or category provided'}), 400
+    question.text = cool_data.text
     category_id = category_id_by_name(data)
     question.category_id = category_id
     db.session.commit()

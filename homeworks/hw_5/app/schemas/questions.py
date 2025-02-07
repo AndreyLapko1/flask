@@ -2,14 +2,14 @@ from pydantic import BaseModel, Field
 
 class CreateQuestion(BaseModel):
     text: str = Field(..., min_length=5)
-    category: str
+    category_id: int = Field(...)
 
 
 
 
 class ResponseQuestion(BaseModel):
     text: str
-    # category: str | None
+    category_id: int
     model_config = {
         'from_attributes': True
     }

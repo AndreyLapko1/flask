@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+	<title>Community pulse</title>
+</head>
+<body>
+<div>
+    <ul>
+        <li><a href="{{url_for("response.get_all_responses")}})">Check statistics</a></li>
+        <li><a href="{{url_for("questions.add_question")}})">Check statistics</a></li>
+
+    </ul>
+    <h1 {{ Title }}></h1>
+
+    {% block content %}
+    Page not zapolnena
+
+    {% endblock %}
+
+</div>
+
+
+
+</body>
+</html>
