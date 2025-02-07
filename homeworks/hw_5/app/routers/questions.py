@@ -1,8 +1,8 @@
-from flask import Blueprint, jsonify, request, redirect, url_for
+from flask import Blueprint, jsonify, request
 from app.models.questions import Question, category_id_by_name, Category
 import pandas as pd
 from app.models import db
-from app.schemas.questions import CreateQuestion, ResponseQuestion, MessageResponse
+from app.schemas.questions import CreateQuestion, ResponseQuestion
 
 
 questions_bp = Blueprint('questions', __name__, url_prefix='/questions')
@@ -31,8 +31,8 @@ def create_question():
     data = request.get_json()
     try:
         category_id = category_id_by_name(data)
-        if category_id is None:
-            return jsonify({'message': 'Invalid category provided'}), 400
+        if category_id is None or 'text' not in data:
+            return jsonify({'message': 'Invalid category or text provided'}), 400
         question_data = CreateQuestion(text=data['text'], category_id=category_id)
         question = Question(text=question_data.text, category_id=question_data.category_id)
         db.session.add(question)
@@ -58,15 +58,15 @@ def update_question(question_id):
         return jsonify({'message': 'Question not found'}), 404
     data = request.get_json()
     category_id = Category.query.filter(Category.name == data['category']).first().id
-    data['category_id'] = category_id
-    cool_data = ResponseQuestion(**data)
-    # if not data or 'text' not in data or 'category' not in data:
-    #     return jsonify({'message': 'No text or category provided'}), 400
-    question.text = cool_data.text
-    category_id = category_id_by_name(data)
-    question.category_id = category_id
-    db.session.commit()
-    return jsonify({'message': f'Question with id {question.id} was update: {question.text}'}), 200
+    if category_id:
+        data['category_id'] = category_id
+        cool_data = ResponseQuestion(**data)
+        question.text = cool_data.text
+        category_id = category_id_by_name(data)
+        question.category_id = category_id
+        db.session.commit()
+        return jsonify({'message': f'Question with id {question.id} was update: {question.text}'}), 200
+    return jsonify({'message': 'Category not found'}), 404
 
 @questions_bp.route('/<int:question_id>', methods=['DELETE'])
 def delete_question(question_id):

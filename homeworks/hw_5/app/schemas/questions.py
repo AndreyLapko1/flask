@@ -4,9 +4,6 @@ class CreateQuestion(BaseModel):
     text: str = Field(..., min_length=5)
     category_id: int = Field(...)
 
-
-
-
 class ResponseQuestion(BaseModel):
     text: str
     category_id: int
@@ -15,11 +12,13 @@ class ResponseQuestion(BaseModel):
     }
 
 class CategoryBase(BaseModel):
-    text: str
+    name: str
 
 
-class MessageResponse(BaseModel):
-    msg: str
+class MessageAddResponse(BaseModel):
+    question_id: int
+    answer: bool
+
 
 
 

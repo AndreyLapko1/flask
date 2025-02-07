@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from app.models.questions import Question, Category
 import pandas as pd
 from app.models import db
-from app.schemas.questions import CreateQuestion, ResponseQuestion, MessageResponse
+from app.schemas.questions import CategoryBase
 
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
@@ -16,7 +16,8 @@ def get_all_categories():
     if not categories:
         return jsonify({'message': 'No categories found'})
     q = [category.name for category in categories]
-    return pd.DataFrame(q).to_html()
+    return jsonify({'categories': q})
+    # return pd.DataFrame(q).to_html()
 
 
 
@@ -32,9 +33,10 @@ def get_category(category_id):
 @categories_bp.route('/', methods=['POST'])
 def create_category():
     data = request.get_json()
-    if data is None or "name" not in data:
-        return jsonify({"message": "missing name"}), 400
-    category = Category(name=data["name"])
+    # if data is None or "name" not in data:
+    #     return jsonify({"message": "missing name"}), 400
+    cool_data = CategoryBase(**data)
+    category = Category(name=cool_data.name)
     db.session.add(category)
     db.session.commit()
     return jsonify({"message": f'category {data["name"]} was added'} ), 201

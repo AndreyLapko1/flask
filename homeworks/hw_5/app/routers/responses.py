@@ -3,6 +3,7 @@ from flask import request
 from app.models.responses import Response
 from app.models.questions import Question
 from app.models.questions import Statistic
+from app.schemas.questions import MessageAddResponse
 from app.models import db
 import pandas as pd
 
@@ -11,24 +12,22 @@ responses_bp = Blueprint('responses', __name__, url_prefix='/responses')
 
 
 @responses_bp.route('/', methods=['GET'])
-def get_all_responses():
+def get_statistic():
     statistics = Statistic.query.all()
     resp_data = [{
-        'question_id': db.session.query(Question.text).filter(Question.id==statistic.question_id).first(),
+        'question_id': db.session.query(Question.text).filter(Question.id==statistic.question_id).first()[0],
         'agree': statistic.agree_count,
         'disagree': statistic.disagree_count,
 
     } for statistic in statistics]
-    return pd.DataFrame(resp_data).to_html()
+    return jsonify(resp_data)
+    # return pd.DataFrame(resp_data).to_html()
 
 
 @responses_bp.route('/', methods=['POST'])
 def add_response():
     data = request.get_json()
-    # if not data or 'question_id' not in data or 'answer' not in data:
-    #     return jsonify({'message': 'No question or answer provided'}), 400
-
-
+    cool_data = MessageAddResponse(**data)
     question = Question.query.get(data['question_id'])
     if not question:
         return jsonify({'message': 'No question provided'}), 400
