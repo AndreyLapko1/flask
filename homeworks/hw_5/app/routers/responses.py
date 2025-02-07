@@ -15,24 +15,24 @@ responses_bp = Blueprint('responses', __name__, url_prefix='/responses')
 def get_statistic():
     statistics = Statistic.query.all()
     resp_data = [{
-        'question_id': db.session.query(Question.text).filter(Question.id==statistic.question_id).first()[0],
+        'question_id': db.session.query(Question.text).filter(Question.id==statistic.question_id).first(),
         'agree': statistic.agree_count,
         'disagree': statistic.disagree_count,
 
     } for statistic in statistics]
-    return jsonify(resp_data)
-    # return pd.DataFrame(resp_data).to_html()
+    # return jsonify(resp_data)
+    return pd.DataFrame(resp_data).to_html()
 
 
 @responses_bp.route('/', methods=['POST'])
 def add_response():
     data = request.get_json()
     cool_data = MessageAddResponse(**data)
-    question = Question.query.get(data['question_id'])
+    question = Question.query.get(cool_data.question_id)
     if not question:
         return jsonify({'message': 'No question provided'}), 400
 
-    stat = Statistic.query.get(data['question_id'])
+    stat = Statistic.query.get(cool_data.question_id)
 
     if not stat:
         stat = Statistic(
@@ -42,7 +42,7 @@ def add_response():
         )
         db.session.add(stat)
 
-    if data['answer']:
+    if cool_data.answer:
         stat.agree_count += 1
     else:
         stat.disagree_count += 1

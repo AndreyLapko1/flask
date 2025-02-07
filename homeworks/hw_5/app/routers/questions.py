@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
-from app.models.questions import Question, category_id_by_name, Category
+from app.models.questions import Question, category_id_by_name, Category, Statistic
+from app.models.responses import Response
 import pandas as pd
 from app.models import db
 from app.schemas.questions import CreateQuestion, ResponseQuestion
@@ -70,10 +71,21 @@ def update_question(question_id):
 
 @questions_bp.route('/<int:question_id>', methods=['DELETE'])
 def delete_question(question_id):
-    question = Question.query.get(question_id)
-    if question is None:
-        return jsonify({'message': 'Question not found'}), 404
-    db.session.delete(question)
-    db.session.commit()
-    return jsonify({'message': f'Answer with id: {question.id} deleted'}), 200
+    try:
+        question = Question.query.get(question_id)
+        if question is None:
+            return jsonify({'message': 'Question not found'}), 404
+        statistic = Statistic.query.filter(Statistic.question_id == question_id).first()
+        if statistic:
+            statistic.disagree_count = 0
+            statistic.agree_count = 0
+            db.session.commit()
+        db.session.delete(question)
+        db.session.commit()
+        return jsonify({'message': 'Question deleted successfully'}), 200
+    except ValueError as e:
+        db.session.rollback()
+        return jsonify({'message': str(e)}), 400
+
+
 
